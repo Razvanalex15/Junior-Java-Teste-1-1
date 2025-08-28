@@ -23,40 +23,53 @@ public class PolicyController {
     this.repo = repo; this.carRepo = carRepo;
   }
 
-  // Create policy for a car
+  // ===== CREATE (201) =====
   @PostMapping("/cars/{carId}/policies")
   public ResponseEntity<?> create(@PathVariable Long carId, @RequestBody @Valid PolicyRequest body) {
     Car car = carRepo.findById(carId).orElse(null);
-    if (car == null) return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(new ErrorResponse("Car " + carId + " not found"));
+    if (car == null)
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Car " + carId + " not found"));
 
     if (body.startDate().isAfter(body.endDate()))
       return ResponseEntity.badRequest().body(new ErrorResponse("startDate must be <= endDate"));
 
     InsurancePolicy p = new InsurancePolicy(car, body.provider(), body.startDate(), body.endDate());
     InsurancePolicy saved = repo.save(p);
-    return ResponseEntity.created(URI.create("/api/policies/" + saved.getId())).body(saved);
+
+    PolicyDto dto = toDto(saved);
+    return ResponseEntity.created(URI.create("/api/policies/" + dto.id())).body(dto);
   }
 
-  // Update policy by id
+  // ===== UPDATE (200 / 404) =====
   @PutMapping("/policies/{id}")
   public ResponseEntity<?> update(@PathVariable Long id, @RequestBody @Valid PolicyRequest body) {
     return repo.findById(id).<ResponseEntity<?>>map(p -> {
       if (body.startDate().isAfter(body.endDate()))
         return ResponseEntity.badRequest().body(new ErrorResponse("startDate must be <= endDate"));
+
       p.setProvider(body.provider());
       p.setStartDate(body.startDate());
       p.setEndDate(body.endDate());
-      return ResponseEntity.ok(repo.save(p));
+      InsurancePolicy saved = repo.save(p);
+
+      return ResponseEntity.ok(toDto(saved));
     }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(new ErrorResponse("Policy " + id + " not found")));
   }
 
-  public record PolicyRequest(
-      String provider,
-      @NotNull LocalDate startDate,
-      @NotNull LocalDate endDate
-  ) {}
-
+  // ===== DTOs =====
+  public record PolicyRequest(String provider, @NotNull LocalDate startDate, @NotNull LocalDate endDate) {}
+  public record PolicyDto(Long id, Long carId, String provider, LocalDate startDate, LocalDate endDate, boolean expiryLogged) {}
   public record ErrorResponse(String message) {}
+
+  private PolicyDto toDto(InsurancePolicy p) {
+    return new PolicyDto(
+        p.getId(),
+        p.getCar() != null ? p.getCar().getId() : null,
+        p.getProvider(),
+        p.getStartDate(),
+        p.getEndDate(),
+        Boolean.TRUE.equals(p.getExpiryLogged())
+    );
+  }
 }

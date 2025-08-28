@@ -7,12 +7,15 @@ com\example\carins\web\PolicyController$PolicyRequest.class
 com\example\carins\web\dto\ClaimDtos.class
 com\example\carins\repo\OwnerRepository.class
 com\example\carins\service\CarService.class
+com\example\carins\web\PolicyController$PolicyDto.class
 com\example\carins\model\InsurancePolicy.class
 com\example\carins\web\RestExceptionHandler.class
 com\example\carins\model\Car.class
+com\example\carins\web\dto\PolicyDto.class
 com\example\carins\web\PolicyController$ErrorResponse.class
 com\example\carins\web\CarController$InsuranceValidityResponse.class
 com\example\carins\model\Owner.class
+com\example\carins\web\RestExceptionHandler$ErrorBody.class
 com\example\carins\web\dto\ClaimDtos$ClaimDto.class
 com\example\carins\web\dto\ClaimDtos$ClaimRequest.class
 com\example\carins\web\CarController.class

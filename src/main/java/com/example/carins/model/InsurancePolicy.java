@@ -36,7 +36,7 @@ public class InsurancePolicy {
         this.provider = provider;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.expiryLogged = false;
+        this.expiryLogged = Boolean.FALSE;
     }
 
     public Long getId() { return id; }

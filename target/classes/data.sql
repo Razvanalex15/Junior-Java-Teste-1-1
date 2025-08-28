@@ -18,9 +18,12 @@ VALUES (2, 1, 'Groupama', DATE '2025-01-01', DATE '2025-12-31', FALSE);
 INSERT INTO insurancepolicy (id, car_id, provider, start_date, end_date, expiry_logged)
 VALUES (3, 2, 'Allianz',  DATE '2025-03-01', DATE '2025-09-30', FALSE);
 
--- CLAIMS
-INSERT INTO insuranceclaim (id, car_id, claim_date, description, amount)
-VALUES (1, 1, DATE '2025-06-15', 'Rear bumper damage', 950.00);
+
+INSERT INTO insuranceclaim (car_id, claim_date, description, amount)
+VALUES (1, DATE '2025-06-15', 'Rear bumper damage', 950.00);
+
+ALTER TABLE insurancepolicy ALTER COLUMN id RESTART WITH 100;
+ALTER TABLE insuranceclaim  ALTER COLUMN id RESTART WITH 100;
 
 -- (opțional) una expirată ieri pentru scheduler
 -- INSERT INTO insurancepolicy (id, car_id, provider, start_date, end_date, expiry_logged)
