@@ -118,73 +118,73 @@ Acceptance criteria:
 
 ## 7) Demo (end-to-end)
 
-# Pornește aplicația într-un terminal
+## Pornește aplicația într-un terminal
 mvn -q clean spring-boot:run
-# API base URL: http://localhost:8080
+## API base URL: http://localhost:8080
 ### A) Enforce Policy End Date (creare / validări)
 
-# Create policy (valid) → 201 Created (observă header-ul Location)
+## Create policy (valid) → 201 Created (observă header-ul Location)
 curl -i -X POST http://localhost:8080/api/cars/1/policies -H "Content-Type: application/json" -d "{\"provider\":\"TestCo\",\"startDate\":\"2026-01-01\",\"endDate\":\"2026-12-31\"}"
 
-# Create fără endDate → 400 Bad Request
+## Create fără endDate → 400 Bad Request
 curl -i -X POST http://localhost:8080/api/cars/1/policies -H "Content-Type: application/json" -d "{\"provider\":\"BadCo\",\"startDate\":\"2026-01-01\"}"
 
-# Create cu startDate > endDate → 400 Bad Request
+## Create cu startDate > endDate → 400 Bad Request
 curl -i -X POST http://localhost:8080/api/cars/1/policies -H "Content-Type: application/json" -d "{\"provider\":\"X\",\"startDate\":\"2026-12-31\",\"endDate\":\"2026-01-01\"}"
 
-# Create pe mașină inexistentă → 404 Not Found
+## Create pe mașină inexistentă → 404 Not Found
 curl -i -X POST http://localhost:8080/api/cars/999/policies -H "Content-Type: application/json" -d "{\"provider\":\"X\",\"startDate\":\"2026-01-01\",\"endDate\":\"2026-12-31\"}"
 
-# Update policy (înlocuiește {ID} cu valoarea din Location) → 200 OK
+## Update policy (înlocuiește {ID} cu valoarea din Location) → 200 OK
 curl -i -X PUT http://localhost:8080/api/policies/{ID} -H "Content-Type: application/json" -d "{\"provider\":\"Y\",\"startDate\":\"2026-02-01\",\"endDate\":\"2026-12-31\"}"
 
 ### B) Claims & History
 
-# Register claim (valid) → 201 Created
+## Register claim (valid) → 201 Created
 curl -i -X POST http://localhost:8080/api/cars/1/claims -H "Content-Type: application/json" -d "{\"claimDate\":\"2025-07-01\",\"description\":\"Rear bumper damage\",\"amount\":950.00}"
 
-# Register claim pe mașină inexistentă → 404 Not Found
+## Register claim pe mașină inexistentă → 404 Not Found
 curl -i -X POST http://localhost:8080/api/cars/999/claims -H "Content-Type: application/json" -d "{\"claimDate\":\"2025-07-01\",\"description\":\"x\",\"amount\":10}"
 
-# Register claim invalid (dată greșită) → 400 Bad Request
+## Register claim invalid (dată greșită) → 400 Bad Request
 curl -i -X POST http://localhost:8080/api/cars/1/claims -H "Content-Type: application/json" -d "{\"claimDate\":\"2025-99-99\",\"description\":\"x\",\"amount\":10}"
 
-# Istoricul mașinii (cronologic: POLICY_START/END + CLAIM) → 200 OK
+## Istoricul mașinii (cronologic: POLICY_START/END + CLAIM) → 200 OK
 curl -s http://localhost:8080/api/cars/1/history
 
 ### C) Validări GET /insurance-valid
 
-# Car existent + dată validă → 200 OK
+## Car existent + dată validă → 200 OK
 curl -i "http://localhost:8080/api/cars/1/insurance-valid?date=2025-06-01"
 
-# Car inexistent → 404 Not Found
+## Car inexistent → 404 Not Found
 curl -i "http://localhost:8080/api/cars/999/insurance-valid?date=2025-06-01"
 
-# Dată invalidă (format) → 400 Bad Request
+## Dată invalidă (format) → 400 Bad Request
 curl -i "http://localhost:8080/api/cars/1/insurance-valid?date=2025-99-99"
 
-# Dată în afara intervalului suportat → 400 Bad Request
+## Dată în afara intervalului suportat → 400 Bad Request
 curl -i "http://localhost:8080/api/cars/1/insurance-valid?date=1799-01-01"
 
 ### D) Scheduler: log „o singură dată” după expirarea poliței
 
-# 1. Deschide H2 Console: http://localhost:8080/h2-console
-#    JDBC URL: jdbc:h2:mem:carins
-#    User: sa  (fără parolă)
+## 1. Deschide H2 Console: http://localhost:8080/h2-console
+##    JDBC URL: jdbc:h2:mem:carins
+##    User: sa  (fără parolă)
 
-# 2. Rulează în H2 (marchează polița 1 ca „expirată ieri” și nelogată)
+## 2. Rulează în H2 (marchează polița 1 ca „expirată ieri” și nelogată)
 UPDATE insurancepolicy SET end_date = CURRENT_DATE - 1, expiry_logged = FALSE WHERE id = 1;
 SELECT id, end_date, expiry_logged FROM insurancepolicy WHERE id = 1;
 
-# 3. Observă log-ul în terminalul unde rulează serverul — apare o singură dată
-#    Policy 1 for car 1 expired on YYYY-MM-DD
+## 3. Observă log-ul în terminalul unde rulează serverul — apare o singură dată
+##    Policy 1 for car 1 expired on YYYY-MM-DD
 
-# 4. Confirmă marcarea
+## 4. Confirmă marcarea
 SELECT id, end_date, expiry_logged FROM insurancepolicy WHERE id = 1;
 -- expiry_logged = TRUE
 
-# Notă: pentru demo rapid, aplicația are un mod de testare (policy.expiry.testMode=true)
-# care permite observarea logului fără a aștepta fereastra 00:00–01:00.
+## Notă: pentru demo rapid, aplicația are un mod de testare (policy.expiry.testMode=true)
+## care permite observarea logului fără a aștepta fereastra 00:00–01:00.
 
 
 **Good luck — and have fun!**
